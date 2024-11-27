@@ -1,0 +1,41 @@
+<launch>
+    <!-- 載入原本的深度估計功能 -->
+    <include file="$(find depth_anything_ros)/launch/depth_estimation.launch">
+        <arg name="camera_type" value="webcam"/>
+        <arg name="video_device" value="/dev/video2"/>
+        <!-- 移除 start_rviz 參數 -->
+    </include>
+
+    <!-- 添加 RTAB-Map 建圖節點 -->
+    <node name="rtabmap" pkg="rtabmap_ros" type="rtabmap" output="screen" 
+          args="--delete_db_on_start">
+        
+        <!-- 基本參數 -->
+        <param name="frame_id" value="base_link"/>
+        <param name="subscribe_depth" value="true"/>
+        <param name="subscribe_scan_cloud" value="true"/>
+        
+        <!-- 訂閱相機和深度話題 -->
+        <remap from="rgb/image" to="/usb_cam/image_raw"/>
+        <remap from="rgb/camera_info" to="/usb_cam/camera_info"/>
+        <remap from="depth/image" to="/depth_anything/depth_registered/image_rect"/>
+        <remap from="cloud" to="/depth_anything/depth_registered/points"/>
+
+        <!-- RTAB-Map 建圖參數 -->
+        <param name="RGBD/NeighborLinkRefining" value="true"/>
+        <param name="RGBD/ProximityBySpace" value="true"/>
+        <param name="RGBD/AngularUpdate" value="0.01"/>
+        <param name="RGBD/LinearUpdate" value="0.01"/>
+        <param name="Rtabmap/DetectionRate" value="1"/>
+        <param name="Grid/CellSize" value="0.05"/>
+        <param name="Grid/RangeMax" value="4.0"/>
+        
+        <!-- 記憶體使用設置 -->
+        <param name="Mem/IncrementalMemory" value="true"/>
+        <param name="Mem/InitWMWithAllNodes" value="true"/>
+    </node>
+
+    <!-- RTAB-Map 視覺化 -->
+    <node name="rtabmap_rviz" pkg="rviz" type="rviz" 
+          args="-d $(find rtabmap_ros)/launch/config/rgbd.rviz"/>
+</launch>

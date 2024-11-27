@@ -1,23 +1,12 @@
 #pragma once
-#include <algorithm>
-#include <cmath>
-#include <iostream>
 #include <opencv2/opencv.hpp>
 #include <tuple>
 
 /**
- * @brief Depth_estimation structure
+ * @brief Resize image for depth estimation
+ * @param img Input image
+ * @param width Target width
+ * @param height Target height
+ * @return Tuple of resized image and original dimensions
  */
-struct DepthEstimation {
-  int x;
-  int y;
-  int label;
-
-  DepthEstimation() {
-    x = 0;
-    y = 0;
-    label = -1;
-  }
-};
-
-std::tuple<cv::Mat, int, int> resize_depth(cv::Mat &img, int w, int h);
+std::tuple<cv::Mat, int, int> resize_depth(cv::Mat& img, int width, int height);

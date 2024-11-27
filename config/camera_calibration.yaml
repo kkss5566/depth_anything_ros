@@ -1,0 +1,20 @@
+image_width: 640
+image_height: 480
+camera_name: usb_cam
+camera_matrix:
+  rows: 3
+  cols: 3
+  data: [507.5, 0.0, 319.5, 0.0, 507.5, 239.5, 0.0, 0.0, 1.0]  # 稍微調整焦距和主點
+distortion_model: plumb_bob
+distortion_coefficients:
+  rows: 1
+  cols: 5
+  data: [0.0, 0.0, 0.0, 0.0, 0.0]  # 如果相機沒有明顯畸變可以保持為0
+rectification_matrix:
+  rows: 3
+  cols: 3
+  data: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+projection_matrix:
+  rows: 3
+  cols: 4
+  data: [507.5, 0.0, 319.5, 0.0, 0.0, 507.5, 239.5, 0.0, 0.0, 0.0, 1.0, 0.0]

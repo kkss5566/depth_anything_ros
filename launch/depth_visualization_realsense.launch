@@ -1,0 +1,33 @@
+<launch>
+    <!-- 基本參數 -->
+    <arg name="model" default="vitl"/>
+    <arg name="model_path" default="$(find depth_anything_ros)/trained_data/depth_anything_v2_metric_hypersim_$(arg model).engine"/>
+    <arg name="depth_scale" default="0.5"/>
+    <arg name="use_rainbow_colormap" default="true"/>
+
+    <!-- 啟動 RealSense 相機 -->
+    <include file="$(find realsense2_camera)/launch/rs_camera.launch">
+        <arg name="align_depth" value="true"/>
+        <arg name="color_width" value="640"/>
+        <arg name="color_height" value="480"/>
+        <arg name="color_fps" value="30"/>
+    </include>
+
+    <!-- 啟動 depth_anything 節點 -->
+    <include file="$(find depth_anything_ros)/launch/depth_estimation.launch">
+        <arg name="camera_type" value="realsense"/>
+    </include>
+
+    <!-- 深度視覺化節點 -->
+    <node name="depth_visualizer" pkg="depth_anything_ros" type="depth_visualizer_node" output="screen">
+        <param name="depth_scale" value="0.5"/>
+        <param name="max_depth" value="4.0"/>
+        <param name="x_width" value="500"/>
+        <param name="z_height" value="300"/>
+        <param name="sample_step" value="4"/>
+        <param name="fx" value="500.0"/>
+        <param name="fy" value="500.0"/>
+        <param name="cx" value="320.0"/>
+        <param name="cy" value="240.0"/>
+    </node>
+</launch>

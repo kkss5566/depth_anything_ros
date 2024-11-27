@@ -1,49 +1,26 @@
 <launch>
     <!-- 基本參數 -->
-    <arg name="camera_type" default="webcam"/>  <!-- webcam 或 realsense -->
-    <arg name="video_device" default="/dev/video2"/>
     <arg name="model" default="vitl"/>
     <arg name="model_path" default="$(find depth_anything_ros)/trained_data/depth_anything_v2_metric_hypersim_$(arg model).engine"/>
     <arg name="depth_scale" default="0.5"/>
     <arg name="use_rainbow_colormap" default="true"/>
 
-    <!-- 相機參數 -->
-    <arg name="input_image" value="/camera/color/image_raw" if="$(eval camera_type == 'realsense')"/>
-    <arg name="input_image" value="/usb_cam/image_raw" unless="$(eval camera_type == 'realsense')"/>
-    <arg name="camera_info" value="/camera/color/camera_info" if="$(eval camera_type == 'realsense')"/>
-    <arg name="camera_info" value="/usb_cam/camera_info" unless="$(eval camera_type == 'realsense')"/>
+    <!-- 優化參數 -->
+    <arg name="skip_frames" default="2"/>
+    <arg name="fps_limit" default="10.0"/>
+    <arg name="use_gpu_optimization" default="true"/>
 
-    <!-- USB 相機節點 -->
-    <group if="$(eval camera_type == 'webcam')">
-        <node name="usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen">
-            <param name="video_device" value="$(arg video_device)"/>
-            <param name="image_width" value="640"/>
-            <param name="image_height" value="480"/>
-            <param name="pixel_format" value="yuyv"/>
-            <param name="camera_frame_id" value="usb_cam"/>
-            <param name="camera_name" value="usb_cam"/>
-            <param name="camera_info_url" value="file://$(find depth_anything_ros)/config/camera_calibration.yaml"/>
-            <param name="framerate" value="30"/>
-            <param name="io_method" value="mmap"/>
-        </node>
-    </group>
+    <!-- RealSense 相機參數 -->
+    <arg name="input_image" value="/camera/color/image_raw"/>
+    <arg name="camera_info" value="/camera/color/camera_info"/>
 
     <!-- 加載相機標定文件 -->
     <rosparam command="load" file="$(find depth_anything_ros)/config/camera_calibration.yaml"/>
 
     <!-- 發布靜態 TF -->
-    <!-- RealSense 的 TF -->
-    <node if="$(eval camera_type == 'realsense')" 
-          pkg="tf2_ros" type="static_transform_publisher" 
+    <node pkg="tf2_ros" type="static_transform_publisher" 
           name="camera_link_broadcaster" 
           args="0 0 0 0 0 0 map camera_link"/>
-
-    <!-- Webcam 的 TF -->
-    <!-- 修改 Webcam 的 TF 設定 -->
-<node unless="$(eval camera_type == 'realsense')" 
-      pkg="tf2_ros" type="static_transform_publisher" 
-      name="camera_link_broadcaster" 
-      args="0 0 0 0 -1.5708 0 map usb_cam"/>
 
     <group ns="depth_anything">
         <!-- Nodelet manager -->
@@ -59,6 +36,9 @@
             <param name="model_path" value="$(arg model_path)"/>
             <param name="depth_scale" value="$(arg depth_scale)"/>
             <param name="use_rainbow_colormap" value="$(arg use_rainbow_colormap)"/>
+            <param name="skip_frames" value="$(arg skip_frames)"/>
+            <param name="fps_limit" value="$(arg fps_limit)"/>
+            <param name="use_gpu_optimization" value="$(arg use_gpu_optimization)"/>
         </node>
 
         <!-- Point cloud generation -->

@@ -1,19 +1,19 @@
 <launch>
     <!-- 基本參數 -->
     <arg name="camera_type" default="webcam"/>  <!-- webcam 或 realsense -->
-    <arg name="video_device" default="/dev/video2"/>
+    <arg name="video_device" default="/dev/video0"/>
     <arg name="model" default="vitl"/>
     <arg name="model_path" default="$(find depth_anything_ros)/trained_data/depth_anything_v2_metric_hypersim_$(arg model).engine"/>
     <arg name="depth_scale" default="0.5"/>
     <arg name="use_rainbow_colormap" default="true"/>
 
-    <!-- 相機參數 -->
-    <arg name="input_image" value="/camera/color/image_raw" if="$(eval camera_type == 'realsense')"/>
-    <arg name="input_image" value="/usb_cam/image_raw" unless="$(eval camera_type == 'realsense')"/>
-    <arg name="camera_info" value="/camera/color/camera_info" if="$(eval camera_type == 'realsense')"/>
-    <arg name="camera_info" value="/usb_cam/camera_info" unless="$(eval camera_type == 'realsense')"/>
+    <!-- 根據相機類型設置不同的 topic -->
+    <arg name="input_image" default="/usb_cam/image_raw" if="$(eval camera_type == 'webcam')"/>
+    <arg name="camera_info" default="/usb_cam/camera_info" if="$(eval camera_type == 'webcam')"/>
+    <arg name="input_image" default="/camera/color/image_raw" if="$(eval camera_type == 'realsense')"/>
+    <arg name="camera_info" default="/camera/color/camera_info" if="$(eval camera_type == 'realsense')"/>
 
-    <!-- USB 相機節點 -->
+    <!-- USB 相機節點 (當使用 webcam 時) -->
     <group if="$(eval camera_type == 'webcam')">
         <node name="usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen">
             <param name="video_device" value="$(arg video_device)"/>
@@ -32,18 +32,8 @@
     <rosparam command="load" file="$(find depth_anything_ros)/config/camera_calibration.yaml"/>
 
     <!-- 發布靜態 TF -->
-    <!-- RealSense 的 TF -->
-    <node if="$(eval camera_type == 'realsense')" 
-          pkg="tf2_ros" type="static_transform_publisher" 
-          name="camera_link_broadcaster" 
-          args="0 0 0 0 0 0 map camera_link"/>
-
-    <!-- Webcam 的 TF -->
-    <!-- 修改 Webcam 的 TF 設定 -->
-<node unless="$(eval camera_type == 'realsense')" 
-      pkg="tf2_ros" type="static_transform_publisher" 
-      name="camera_link_broadcaster" 
-      args="0 0 0 0 -1.5708 0 map usb_cam"/>
+    <node pkg="tf2_ros" type="static_transform_publisher" name="camera_link_broadcaster"
+          args="0 0 0 0 0 0 map $(eval 'camera_link' if camera_type == 'realsense' else 'usb_cam')"/>
 
     <group ns="depth_anything">
         <!-- Nodelet manager -->

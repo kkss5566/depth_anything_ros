@@ -1,0 +1,9 @@
+<library path="lib/libdepth_anything_ros">
+  <class name="depth_anything_ros/point_cloud_xyzrgb" 
+         type="depth_image_proc::PointCloudXYZRGBNodelet" 
+         base_class_type="nodelet::Nodelet">
+    <description>
+      Nodelet to convert depth and RGB images into XYZRGB point cloud
+    </description>
+  </class>
+</library>
